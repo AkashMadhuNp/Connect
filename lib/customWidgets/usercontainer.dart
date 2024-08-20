@@ -10,27 +10,33 @@ class Usercontainer extends StatelessWidget {
   final List<MenuItems> items;
   final Color color;
 
-  const Usercontainer({super.key, required this.text, required this.img, required this.color, required this.items});
+  const Usercontainer({
+    super.key, 
+    required this.text, 
+    required this.img, 
+    required this.color, 
+    required this.items
+    });
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: EdgeInsets.all(8),  // Added padding
+      padding:const EdgeInsets.all(8),  // Added padding
       height: 250,
       width: double.infinity,
       decoration: BoxDecoration(
         boxShadow: [
           BoxShadow(
-            color: Color.fromARGB(255, 110, 100, 117).withOpacity(0.5),
+            color:const Color.fromARGB(255, 110, 100, 117).withOpacity(0.5),
             blurRadius: 7,
             spreadRadius: 1,
-            offset: Offset(0, 3),
+            offset: const Offset(0, 3),
           ),
         ],
         gradient: LinearGradient(
           colors: [
             Colors.orange.shade300,
-            Color.fromARGB(255, 237, 217, 37),
+           const Color.fromARGB(255, 237, 217, 37),
             Colors.orange.shade400
           ],
           // begin: Alignment.topLeft,

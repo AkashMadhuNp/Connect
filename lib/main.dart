@@ -1,10 +1,11 @@
 
 import 'package:first_project_app/model/categorymodel.dart';
 import 'package:first_project_app/model/eventmodel.dart';
+import 'package:first_project_app/model/memorymodel.dart';
 import 'package:first_project_app/model/taskmodel.dart';
 import 'package:first_project_app/model/usermodel.dart';
-import 'package:first_project_app/screens/homescreen.dart';
 import 'package:first_project_app/screens/splash_screen.dart';
+import 'package:first_project_app/services/notification_services.dart';
 import 'package:flutter/material.dart';
 import 'package:hive_flutter/adapters.dart';
 
@@ -47,7 +48,14 @@ void main() async {
   await Hive.openBox<EventModel>('event_db');
   print("Event Box opened");
 
-  
+   await LocalNotificationService.init();
+
+
+   if(!Hive.isAdapterRegistered(MemoryModelAdapter().typeId)){
+    Hive.registerAdapter(MemoryModelAdapter());
+    print("MemoryModel Registered");
+   }
+
   
   runApp(const MyApp());
 }

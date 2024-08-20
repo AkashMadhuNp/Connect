@@ -7,11 +7,15 @@ import 'package:first_project_app/customWidgets/custdialog.dart';
 import 'package:first_project_app/customWidgets/usercontainer.dart';
 import 'package:first_project_app/db_Functions/category_db.dart';
 import 'package:first_project_app/db_Functions/db_functions.dart';
+import 'package:first_project_app/db_Functions/task_db.dart';
 import 'package:first_project_app/model/categorymodel.dart';
+import 'package:first_project_app/model/taskmodel.dart';
 import 'package:first_project_app/model/usermodel.dart';
+import 'package:first_project_app/screens/calenderScreen/calender_screen.dart';
 import 'package:first_project_app/screens/home/view_category.dart';
 import 'package:flutter/material.dart';
   import 'package:google_fonts/google_fonts.dart';
+import 'package:intl/intl.dart';
 
   class HomeScreen extends StatefulWidget {
     const HomeScreen({Key? key}) : super(key: key);
@@ -23,9 +27,10 @@ import 'package:flutter/material.dart';
   class _HomeScreenState extends State<HomeScreen> {
 
 
-    final List<String> names = ['Akash', 'Madhu', 'NP'];
-  int _currentIndex = 0;
-  final CarouselController _controller = CarouselController();
+     List<TaskModel> todaysTasks = [];
+  String currentDate = '';
+
+  
 
     
     List <Widget> widgets=[];
@@ -35,8 +40,10 @@ import 'package:flutter/material.dart';
     void initState() {
       super.initState();
       _loadCurrentUser();
+      _fetchTodaysTasks();
       CategoryFunction().currentUserCategory(userKey!);
       CategoryFunction().getCategory();
+      
     }
 
     Future<void> _loadCurrentUser() async {
@@ -46,6 +53,22 @@ import 'package:flutter/material.dart';
         setState(() {});
       }
     }
+bool _isLoading = false;
+
+    Future<void> _fetchTodaysTasks() async {
+  setState(() => _isLoading = true);
+  try {
+    await TaskFunctions().getCurrentUsertaskOnSelectedDay(DateTime.now());
+    setState(() {
+      todaysTasks = currentUserTaskOnSelecteDdayNotifier.value;
+    });
+  } catch (e) {
+    // Handle error (e.g., show a snackbar with an error message)
+    print('Error fetching tasks: $e');
+  } finally {
+    setState(() => _isLoading = false);
+  }
+}
 
     @override
     Widget build(BuildContext context) {
@@ -122,57 +145,119 @@ import 'package:flutter/material.dart';
 
 
                 CarouselSlider(
-          items: names.map((name) {
-            return Builder(
-              builder: (BuildContext context) {
-                return Container(
-                  width: MediaQuery.of(context).size.width,
-                  margin: EdgeInsets.symmetric(horizontal: 5.0),
-                  decoration: BoxDecoration(
-                     gradient: LinearGradient(
-            colors: [
-              Colors.orange.shade100,
-           Colors.orange.shade300,
-           Colors.orange.shade100
-            ],
-            begin: Alignment.topCenter,
-            end: Alignment.bottomLeft
-            ),
-                    borderRadius: BorderRadius.circular(8.0),
+                  options: CarouselOptions(
+                    height: 100.0,
+                    enlargeCenterPage: true,
+                    autoPlay: true,
+                    aspectRatio: 16 / 9,
+                    autoPlayCurve: Curves.fastOutSlowIn,
+                    enableInfiniteScroll: true,
+                    autoPlayAnimationDuration: Duration(milliseconds: 800),
+                    viewportFraction: 0.8,
                   ),
-                  child: Center(
-                    child: Text(
-                      name,
-                      style: GoogleFonts.irishGrover(
-                        fontSize: 12.0, fontWeight: FontWeight.bold),
-                    ),
-                  ),
-                );
-              },
-            );
-          }).toList(),
-          carouselController: _controller,
-          options: CarouselOptions(
-            height: 100.0,
-            enlargeCenterPage: true,
-            autoPlay: true,
-            aspectRatio: 16 / 9,
-            autoPlayCurve: Curves.fastOutSlowIn,
-            enableInfiniteScroll: true,
-            autoPlayAnimationDuration: Duration(milliseconds: 800),
-            viewportFraction: 0.8,
-            onPageChanged: (index, reason) {
-              setState(() {
-                _currentIndex = index;
-              });
-            },
-          ),
-        ),
+                  items: todaysTasks.isNotEmpty
+                      ? todaysTasks.map((task) {
+                          return Builder(
+                            builder: (BuildContext context) {
+                              return Container(
+                                width: MediaQuery.of(context).size.width,
+                                margin: EdgeInsets.symmetric(horizontal: 5.0),
+                                decoration: BoxDecoration(
+                                  gradient: LinearGradient(
+                                    colors: [
+                                        Color.fromARGB(255, 232, 203, 249),
+                                Color.fromARGB(255, 252, 219, 205),
+                                Colors.blue.shade100
+                                    ],
+                                    begin: Alignment.topCenter,
+                                    end: Alignment.bottomLeft
+                                  ),
+                                  borderRadius: BorderRadius.circular(8.0),
+                                ),
+                                child: Padding(
+                                  padding: const EdgeInsets.all(8.0),
+                                  child: Column(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      Text(
+                                        task.Tasktitle ?? '',
+                                         style:GoogleFonts.irishGrover(
+                                          fontSize: 20,
+                                          fontWeight: FontWeight.w500,
+                                          foreground: Paint()
+                  ..shader = const LinearGradient(
+                    colors: [Colors.blue, Colors.purple],
+                  ).
+                  createShader(
+                    const Rect.fromLTWH(0.0, 0.0, 200.0, 70.0)
+                    )
+                                      ),
+                                      
+                                      // Text(
+                                      //   task.startTime ?? '',
+                                      //   style: GoogleFonts.irishGrover(
+                                      //     fontSize: 14.0,
+                                      //   ),
+                                      // ),
+                                      ),
 
-        SizedBox(height: 10,),
+                                      Text(
+                                        task.startTime ?? '',
+                                        style: GoogleFonts.irishGrover(
+                                          fontSize: 14.0,
+                                          color: Colors.grey.shade900,
+                                          letterSpacing: 2
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              );
+                            },
+                          );
+                        }).toList()
+                      : [
+                          Builder(
+                            builder: (BuildContext context) {
+                              return Container(
+                                width: MediaQuery.of(context).size.width,
+                                margin: EdgeInsets.symmetric(horizontal: 5.0),
+                                decoration: BoxDecoration(
+                                  gradient: LinearGradient(
+                                    colors: [
+                                      
+                                      Colors.orange.shade100,
+                                      Colors.orange.shade200
+                                    ],
+                                    begin: Alignment.topCenter,
+                                    end: Alignment.bottomLeft
+                                  ),
+                                  borderRadius: BorderRadius.circular(8.0),
+                                ),
+                                child: Center(
+                                  child: Text(
+                                    'No tasks scheduled',
+                                    style: GoogleFonts.irishGrover(
+                                      fontSize: 14.0,
+                                      fontWeight: FontWeight.bold,
+                                      color: const Color.fromARGB(255, 76, 61, 79)
+                                    ),
+                                    textAlign: TextAlign.center,
+                                  ),
+                                ),
+                              );
+                            },
+                          ),
+                        ],
+                ),
+                
+         
+        
+
+        
 
 
-        Divider(thickness: 3,),
+        
 
 
                 // CarouselSlider.builder(
@@ -202,6 +287,9 @@ import 'package:flutter/material.dart';
                 //     autoPlayCurve: Curves.fastOutSlowIn,
                 //   ),
                 // ),
+
+
+                Divider(thickness: 2,),
 
                   Padding(
                     padding: const EdgeInsets.all(12),
@@ -248,12 +336,12 @@ import 'package:flutter/material.dart';
                     ),
 
                     SizedBox(height: 10,),
-                ],
+                ]
               ),
             ),
-          ),
-        ),
-      );
+          )),
+        );
+      
     }
 
 

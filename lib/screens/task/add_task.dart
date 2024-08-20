@@ -7,6 +7,7 @@ import 'package:first_project_app/db_Functions/task_db.dart';
 import 'package:first_project_app/model/taskmodel.dart';
 import 'package:first_project_app/model/usermodel.dart';
 import 'package:first_project_app/screens/home/home_nav.dart';
+import 'package:first_project_app/services/notification_services.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
@@ -405,6 +406,77 @@ class _AddTaskPageState extends State<AddTaskPage> {
                           
 
 
+                          ValueListenableBuilder(
+                            valueListenable: reminderNotifier, 
+                            builder: (context, value, child) {
+                              return Padding(padding: EdgeInsets.only(
+                                top: 30,
+                                bottom: 10
+                              ),
+                              child: ElevatedButton(
+                                onPressed: () async {
+                                  reminderNotifier.value = !reminderNotifier.value;
+                                  reminderOn = !reminderOn!;
+                                  
+                                },
+                                style: ButtonStyle(
+                                  shape: MaterialStatePropertyAll(
+                                    RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(30),
+                                      side: BorderSide(
+                                        color: reminderOn == true
+                                        ? Colors.orange
+                                        : Colors.black,
+                                        width: 1
+                                      )
+                                    )
+                                  ),
+
+
+                                  backgroundColor: MaterialStatePropertyAll(
+                                    reminderOn == true
+                                    ? Colors.orange
+                                    :Colors.white
+                                    )
+                                ),
+
+                                child: Padding(
+                                  padding: EdgeInsets.all(15),
+                                  child: Row(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      Text(reminderOn == true
+                                      ? "Reminder is On"
+                                      : "Set Reminder",
+                                      style: GoogleFonts.irishGrover(
+                                        color: reminderOn == true
+                                          ? Colors.white
+                                      : Colors.black,
+                                      fontWeight: FontWeight.bold
+                                      ),
+                                      ),
+
+                                      SizedBox(width: 20,),
+
+
+                                      Icon(
+                                        reminderOn == true
+                                        ? Icons.notifications_active
+                                        : Icons.notifications_none,
+                                        color: reminderOn == true
+                                        ? Colors.white
+                                        : Colors.black
+                                      )
+                                    ],
+                                  ),
+                                
+                                ),
+                              ),
+                              );
+                            },),
+
+
+
                           Padding(padding: EdgeInsets.only(top: 20,bottom: 20),
                           child: SizedBox(
                             width: 350,
@@ -414,62 +486,30 @@ class _AddTaskPageState extends State<AddTaskPage> {
                                 backgroundColor:MaterialStatePropertyAll(Colors.orange)
                               ),
                               onPressed: ()async{
-                                // if(reminderOn == true){
-                                //   DateTime pickDate = DateTime.parse(dateController.text.trim());
-                                //   String time = startTimeController.text.trim();
-                                //   List parts = time.split('');
-                                //   List timeParts = parts[0].split(':');
-                                //   int hour = int.parse(timeParts[0]);
-                                //   int minutes = int.parse(timeParts[1]);
-                                //   String period = parts[1];
-                                //   if(period == "PM"
-                                //   && hour != 12){
-                                //     hour +=12;
-                                //   }
-                                //   TimeOfDay pickedTime = TimeOfDay(
-                                //     hour: hour, 
-                                //     minute: minutes);
-
-                          
-                                // }
-                                await onAddTaskButtonClicked();
-                              
-                            }, child: Padding(
-                              padding: const EdgeInsets.all(16.0),
-                              child: Text("Set Reminder",style: GoogleFonts.irishGrover(color: Colors.white,fontSize: 24),),
-                            )),
-                          ),  
-                          ),
-
-
-
-                          Padding(padding: EdgeInsets.only(top: 20,bottom: 20),
-                          child: SizedBox(
-                            width: 350,
-                            child: ElevatedButton(
-                              
-                              style: ButtonStyle(
-                                backgroundColor:MaterialStatePropertyAll(Colors.orange)
-                              ),
-                              onPressed: ()async{
-                                // if(reminderOn == true){
-                                //   DateTime pickDate = DateTime.parse(dateController.text.trim());
-                                //   String time = startTimeController.text.trim();
-                                //   List parts = time.split('');
-                                //   List timeParts = parts[0].split(':');
-                                //   int hour = int.parse(timeParts[0]);
-                                //   int minutes = int.parse(timeParts[1]);
-                                //   String period = parts[1];
-                                //   if(period == "PM"
-                                //   && hour != 12){
-                                //     hour +=12;
-                                //   }
-                                //   TimeOfDay pickedTime = TimeOfDay(
-                                //     hour: hour, 
-                                //     minute: minutes);
-
-                          
-                                // }
+                                if (reminderOn == true) {
+                                        DateTime pickedDate = DateTime.parse(
+                                            dateController.text.trim());
+                                        String time =
+                                            startTimeController.text.trim();
+                                        List parts = time.split(' ');
+                                        List timeParts = parts[0].split(':');
+                                        int hour = int.parse(timeParts[0]);
+                                        int minutes = int.parse(timeParts[1]);
+                                        String period = parts[1]; // AM or PM
+                                        if (period == "PM" && hour != 12) {
+                                          hour += 12;
+                                        }
+                                        TimeOfDay pickedTime = TimeOfDay(
+                                            hour: hour, minute: minutes);
+                                        await LocalNotificationService
+                                            .showScheduledNotification(
+                                                time: pickedTime,
+                                                date: pickedDate,
+                                                title:
+                                                    'Hey ${currentUser?.userName ?? 'there'}, Don\'t forget about your task.',
+                                                body:
+                                                    'Title : ${titleController.text.trim()}\nGet it done now!');
+                                      }
                                 await onAddTaskButtonClicked();
                               
                             }, child: Padding(
@@ -499,50 +539,71 @@ class _AddTaskPageState extends State<AddTaskPage> {
   }
 
 
-    Future<void> onAddTaskButtonClicked() async {
-  try {
-    String? currentUserKey = await UserFunctions().getCurrentUserKey();
+     Future<void> onAddTaskButtonClicked() async {
+    try {
+      String? currentUserKey = await UserFunctions().getCurrentUserKey();
 
-    final _taskTitle = titleController.text.trim();
-    final _date = dateController.text.trim();
-    final _startTime = startTimeController.text.trim();
-    final _endTime = endtimeController.text.trim();
-    final _taskNote = taskNoteController.text.trim();
-    final _taskType = taskTypeController.text.trim();
+      final _taskTitle = titleController.text.trim();
+      final _date = dateController.text.trim();
+      final _startTime = startTimeController.text.trim();
+      final _endTime = endtimeController.text.trim();
+      final _taskNote = taskNoteController.text.trim();
+      final _taskType = taskTypeController.text.trim();
 
-    if (formKey.currentState!.validate()) {
-      TaskModel task = TaskModel(
-        Tasktitle: _taskTitle,
-        date: _date,
-        startTime: _startTime,
-        endTime: _endTime,
-        reminder: reminderOn,
-        taskNote: _taskNote,
-        taskType: _taskType,
-        isImportant: false,
-        iscompleted: false,
-        userKey: currentUserKey,
-      );
+      if (formKey.currentState!.validate()) {
+        TaskModel task = TaskModel(
+          Tasktitle: _taskTitle,
+          date: _date,
+          startTime: _startTime,
+          endTime: _endTime,
+          reminder: reminderOn,
+          taskNote: _taskNote,
+          taskType: _taskType,
+          isImportant: false,
+          iscompleted: false,
+          userKey: currentUserKey,
+        );
 
-      await TaskFunctions().addTask(task);
-      
-      // Refresh tasks for the current day
-      await TaskFunctions().getCurrentUsertaskOnSelectedDay(DateTime.parse(_date));
-      
-      CustomSnackBar.show(context, 'new task has been successfully added');
-      Navigator.of(context).pushReplacement(
-          MaterialPageRoute(builder: (context) => const HomeNavPage()));
-    } else {
+        await TaskFunctions().addTask(task);
+        
+        // Refresh tasks for the current day
+        await TaskFunctions().getCurrentUsertaskOnSelectedDay(DateTime.parse(_date));
+        
+        // Schedule notification if reminder is on
+        if (reminderOn == true) {
+          DateTime pickedDate = DateTime.parse(_date);
+          List timeParts = _startTime.split(' ');
+          List timeValues = timeParts[0].split(':');
+          int hour = int.parse(timeValues[0]);
+          int minutes = int.parse(timeValues[1]);
+          String period = timeParts[1]; // AM or PM
+          if (period == "PM" && hour != 12) {
+            hour += 12;
+          }
+          TimeOfDay pickedTime = TimeOfDay(hour: hour, minute: minutes);
+          
+          await LocalNotificationService.showScheduledNotification(
+            time: pickedTime,
+            date: pickedDate,
+            title: 'Hey ${currentUser?.userName ?? 'there'}, Don\'t forget about your task.',
+            body: 'Title: $_taskTitle\nGet it done now!'
+          );
+        }
+
+        CustomSnackBar.show(context, 'New task has been successfully added');
+        Navigator.of(context).pushReplacement(
+            MaterialPageRoute(builder: (context) => const HomeNavPage()));
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+          content: Text('Please fill in all required fields'),
+        ));
+      }
+    } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-        content: Text('Please fill in all required fields'),
+        content: Text('Failed to add task. Please try again later.'),
       ));
     }
-  } catch (e) {
-    ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-      content: Text('Failed to add task. Please try again later.'),
-    ));
   }
-}
 
     void datePicker() async {
     DateTime? pickDate = await showDatePicker(

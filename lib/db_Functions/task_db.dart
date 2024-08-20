@@ -113,4 +113,13 @@ class TaskFunctions extends ChangeNotifier {
     taskNotDoneNotifier.value = notDoneTask;
     return notDoneTask;
   }
+
+
+  Future<void> toggleTaskImportance(TaskModel task)async{
+    final taskVariable = await Hive.openBox<TaskModel>('task_db');
+    task.isImportant = !task.isImportant!;
+    await taskVariable.put(task.key, task);
+    await getTaskImportant();
+    notifyListeners();
+  }
 }

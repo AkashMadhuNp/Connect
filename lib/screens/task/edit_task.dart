@@ -8,6 +8,7 @@ import 'package:first_project_app/db_Functions/task_db.dart';
 import 'package:first_project_app/model/taskmodel.dart';
 import 'package:first_project_app/model/usermodel.dart';
 import 'package:first_project_app/screens/task/add_task.dart';
+import 'package:first_project_app/services/notification_services.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:hive/hive.dart';
@@ -121,6 +122,7 @@ ValueNotifier<bool> reminderNotifier2 = ValueNotifier(false);
                         right: 40
                         ),
                       child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Padding(
                             padding: const EdgeInsets.only(
@@ -414,21 +416,19 @@ ValueNotifier<bool> reminderNotifier2 = ValueNotifier(false);
                           maxLines: 5,
                           ),
 
-
                           ValueListenableBuilder(
                             valueListenable: reminderNotifier, 
                             builder: (context, value, child) {
                               return Padding(padding: EdgeInsets.only(
                                 top: 30,
                                 bottom: 10,
-
                               ),
-                              child: ElevatedButton(
+                              child:ElevatedButton(
                                 onPressed: () async{
                                   reminderNotifier.value = !reminderNotifier.value;
-                                  reminderOn =! reminderOn!;
-                                  
+                                  reminderOn = !reminderOn!;
                                 }, 
+
                                 style: ButtonStyle(
                                   shape: MaterialStatePropertyAll(
                                     RoundedRectangleBorder(
@@ -436,7 +436,7 @@ ValueNotifier<bool> reminderNotifier2 = ValueNotifier(false);
                                       side: BorderSide(
                                         color: reminderOn == true
                                         ? Colors.orange
-                                        :Colors.black,
+                                        : Colors.black,
                                         width: 1
                                       )
                                     )
@@ -461,8 +461,10 @@ ValueNotifier<bool> reminderNotifier2 = ValueNotifier(false);
                                           color: reminderOn == true
                                           ? Colors.white
                                           : Colors.black,
+
                                           fontWeight: FontWeight.bold
                                         ),
+
                                         ),
 
                                         SizedBox(width: 20,),
@@ -470,64 +472,79 @@ ValueNotifier<bool> reminderNotifier2 = ValueNotifier(false);
                                         Icon(
                                           reminderOn == true
                                           ? Icons.notifications_active
-                                          :Icons.notifications_none,
-
+                                          : Icons.notifications_none,
                                           color: reminderOn == true
                                           ? Colors.white
-                                          :Colors.black,
+                                          : Colors.black,
+                                          
                                           )
-
-                                    ],),
-                                  )),
+                                    ],
+                                  ),
+                                  ),) ,
                               );
-                            },
-                            ),
+                            },),
 
-                            Padding(padding: EdgeInsets.only(
-                              top: 20.0,
-                              bottom: 20.0
-                            ),
-                            child: SizedBox(
-                              width:double.infinity ,
-                              child: ElevatedButton(
-                                style: ButtonStyle(
-                                  backgroundColor: MaterialStatePropertyAll(Colors.orange),
-                                ),
-                                onPressed: () async{
-                                if(reminderOn == true){
-                                  DateTime pickedDate = DateTime.parse(
-                                    dateController.text.trim()
-                                  );
 
-                                  String time = startTimeController.text.trim();
-                                  List parts = time.split("");
-                                  List timeParts = parts[0].split(':');
-                                  int hour=int.parse(timeParts[0]);
-                                  int minutes = int.parse(timeParts[1]);
-                                  String period = parts[1];
-                                  if(period == "PM"  && hour != 12){
-                                    hour += 12;
-                                  }
-                                  TimeOfDay pickedTime = TimeOfDay(
-                                    hour: hour, 
-                                    minute: minutes);
+                            Padding(
+                              padding:
+                                  const EdgeInsets.only(top: 20.0, bottom: 20),
+                              child: SizedBox( 
+                                child: ElevatedButton(
+                                    onPressed: () async {
+  if (reminderOn == true) {
+    try {
+      DateTime pickedDate = DateTime.parse(dateController.text.trim());
+      String time = startTimeController.text.trim();
+      List parts = time.split(' ');
+      List timeParts = parts[0].split(':');
+      int hour = int.parse(timeParts[0]);
+      int minutes = int.parse(timeParts[1]);
+      String period = parts[1]; // AM or PM
+      if (period == "PM" && hour != 12) {
+        hour += 12;
+      }
+      TimeOfDay pickedTime = TimeOfDay(hour: hour, minute: minutes);
+      await LocalNotificationService.showScheduledNotification(
+        time: pickedTime,
+        date: pickedDate,
+        title: 'Hey ${currentUser?.userName ?? 'there'}, Don\'t forget about your task.',
+        body: 'Title : ${titleController.text.trim()}\nGet it done now!'
+      );
+    } catch (e) {
+      print('Error scheduling notification: $e');
+      CustomSnackBar.show(context, 'Failed to set reminder');
+    }
+  }
+  
+  await updateTask(widget.key1);
+},
+                                    style: ButtonStyle(
+                                      backgroundColor: MaterialStatePropertyAll(
+                                        Colors.orange,
+                                      ),
+                                      foregroundColor:
+                                          MaterialStatePropertyAll(Colors.white),
+                                      fixedSize: const MaterialStatePropertyAll(
+                                        Size(380.0, 50.0),
+                                      ),
+                                    ),
+                                    child:  Text(
+                                      'Edit',
+                                      style: GoogleFonts.irishGrover(fontSize: 20.0),
+                                    )),
+                              ))
 
-                                    
-                                }
-                                await updateTask(
-                                  widget.key1
-                                );
-                              }, child: Padding(
-                                padding: const EdgeInsets.all(8.0),
-                                child: Text("Edit",style: GoogleFonts.irishGrover(
-                                  fontSize: 24,
-                                  letterSpacing: 2,
-                                  color: Colors.white
-                                  
-                                ),),
-                              )),
-                            ),
-                            )
+
+                            
+
+
+
+
+
+
+
+
+                            
                             ],
 
                           
@@ -542,39 +559,39 @@ ValueNotifier<bool> reminderNotifier2 = ValueNotifier(false);
       ),
     );
   }
-Future updateTask(int key1) async {
-    final Box<TaskModel> tasks = await Hive.openBox<TaskModel>('task_db');
-    final TaskModel existingTask = tasks.get(key1)!;
-    final taskTitle = titleController.text.trim();
-    final date = dateController.text.trim();
-    final startTime = startTimeController.text.trim();
-    final endTime = endTimeController.text.trim();
-    final taskNote = taskNoteController.text.trim();
-    final taskType = taskTypeController.text.trim();
-
-    if (formKey.currentState!.validate()) {
-      TaskModel taskModel = TaskModel(
-          Tasktitle: taskTitle,
-          date: date,
-          startTime: startTime,
-          endTime: endTime,
-          taskNote: taskNote,
-          taskType: taskType,
-          isImportant: existingTask.isImportant,
-          iscompleted: existingTask.iscompleted,
-          userKey: userKey,
-          reminder: reminderOn);
-
-      await TaskFunctions()
-          .editTask(taskModel, key1)
-          .then((value) => Navigator.of(context).pop());
-      // ignore: use_build_context_synchronously
-      CustomSnackBar.show(context, 'Task has been edited successfully');
-    } else {
-      return null;
-    }
+Future<void> updateTask(int key1) async {
+  if (!formKey.currentState!.validate()) {
+    CustomSnackBar.show(context, 'Please fill all required fields correctly');
+    return;
   }
 
+  try {
+    final Box<TaskModel> tasks = await Hive.openBox<TaskModel>('task_db');
+    final TaskModel existingTask = tasks.get(key1)!;
+    
+    TaskModel taskModel = TaskModel(
+      Tasktitle: titleController.text.trim(),
+      date: dateController.text.trim(),
+      startTime: startTimeController.text.trim(),
+      endTime: endTimeController.text.trim(),
+      taskNote: taskNoteController.text.trim(),
+      taskType: taskTypeController.text.trim(),
+      isImportant: existingTask.isImportant,
+      iscompleted: existingTask.iscompleted,
+      userKey: userKey,
+      reminder: reminderOn
+    );
+
+    await TaskFunctions().editTask(taskModel, key1);
+    
+    Navigator.of(context).pop();
+    CustomSnackBar.show(context, 'Task has been edited successfully');
+  } catch (e, stackTrace) {
+    print('Error updating task: $e');
+    print('Stack trace: $stackTrace');
+    CustomSnackBar.show(context, 'An error occurred while updating the task: ${e.toString()}');
+  }
+}
   void datePicker() async {
     DateTime? pickDate = await showDatePicker(
       context: context,

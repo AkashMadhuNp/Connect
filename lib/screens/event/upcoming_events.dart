@@ -8,6 +8,7 @@ import 'package:first_project_app/db_Functions/event_db.dart';
 import 'package:first_project_app/model/eventmodel.dart';
 import 'package:first_project_app/screens/calenderScreen/custom_calender.dart';
 import 'package:first_project_app/screens/event/edit_event.dart';
+import 'package:first_project_app/screens/event/memory/memoryprompt.dart';
 import 'package:first_project_app/screens/event/view_event.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
@@ -29,6 +30,7 @@ class _MyWidgetState extends State<UpcomingEvents> {
   void initState() {
     super.initState();
    initializeEvents();
+   
   }
 
   DateTime? rangeStart;
@@ -256,5 +258,17 @@ class _MyWidgetState extends State<UpcomingEvents> {
   Future eventDone(EventModel events, int key) async {
     events.isImportant = valueChecked1;
     return await EventFunctions().editEvents(events, key);
+  }
+
+
+  void checkEndedEvents()async{
+    List<EventModel> endedEvents = await EventFunctions().getEndedEventsWithoutMemories();
+    for(var event in endedEvents){
+      WidgetsBinding.instance.addPostFrameCallback((_){
+        showDialog(
+          context: context, 
+          builder: (BuildContext context) => MemoryPrompt(event: event) ,);
+      });
+    }
   }
 }

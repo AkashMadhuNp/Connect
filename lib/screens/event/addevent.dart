@@ -77,7 +77,9 @@ class _MyWidgetState extends State<AddEvents> {
                   height: 50,
                 ),
                 Padding(
-                  padding:  EdgeInsets.only(left:  width<600?width*0.04:width*0.3, right:  width<600?width*0.04:width*0.3),
+                  padding:  EdgeInsets.only(
+                    left:  width<600?width*0.04:width*0.3, 
+                    right:  width<600?width*0.04:width*0.3),
                   child: Column(
                     children: [
                       const SizedBox(
@@ -128,7 +130,10 @@ class _MyWidgetState extends State<AddEvents> {
                                     color: Colors.grey,
                                   )),
                               Text(DateFormat('dd-MMM-yyy')
-                                  .format(selectedDate!)),
+                                  .format(selectedDate!),
+                                  style: GoogleFonts.irishGrover(),
+                                  
+                                  ),
                             ],
                           ),
                           Row(
@@ -141,7 +146,10 @@ class _MyWidgetState extends State<AddEvents> {
                                     Icons.timer,
                                     color: Colors.grey,
                                   )),
-                              Text(selectedTime!.format(context),),
+                              Text(
+                                selectedTime!.format(context),
+                                style: GoogleFonts.irishGrover(),
+                                ),
                             ],
                           ),
                         ],

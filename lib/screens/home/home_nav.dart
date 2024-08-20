@@ -23,7 +23,7 @@ class _HomeNavPageState extends State<HomeNavPage> {
     HomeScreen(),
     TaskPage(),
     EventScreen(),
-    PerformPage(),
+    PerfomancePage(),
   
   ];
 

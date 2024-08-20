@@ -1,4 +1,5 @@
 import 'package:first_project_app/db_Functions/db_functions.dart';
+import 'package:first_project_app/db_Functions/memory_db.dart';
 import 'package:first_project_app/model/eventmodel.dart';
 import 'package:flutter/material.dart';
 import 'package:hive_flutter/hive_flutter.dart';
@@ -88,4 +89,29 @@ class EventFunctions extends ChangeNotifier {
     await eventBox.delete(key);
    await  getallEvents();
   }
+
+
+Future<List<EventModel>> getEndedEventsWithoutMemories() async {
+    final now = DateTime.now();
+    final eventBox = await Hive.openBox<EventModel>('event_db');
+    final memoryFunctions = MemoryFunction();
+
+    List<EventModel> endedEvents = [];
+
+    for (var event in eventBox.values) {
+      if (event.eventDate != null && event.eventTime != null) {
+        final eventDateTime = DateFormat('dd-MMM-yyyy HH:mm').parse('${event.eventDate} ${event.eventTime}');
+        if (eventDateTime.isBefore(now)) {
+          final memories = await memoryFunctions.getMemoriesForEvent(event.key.toString());
+          if (memories.isEmpty) {
+            endedEvents.add(event);
+          }
+        }
+      }
+    }
+
+    await eventBox.close();
+    return endedEvents;
+  }
+
 }

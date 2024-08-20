@@ -7,6 +7,7 @@ import 'package:first_project_app/db_Functions/task_db.dart';
 import 'package:first_project_app/model/taskmodel.dart';
 import 'package:first_project_app/screens/task/task_viewscreen.dart';
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 ValueNotifier<List<TaskModel>> taskNotDoneNotifier = ValueNotifier([]);
 
@@ -45,7 +46,7 @@ class _TaskNotDoneState extends State<TaskNotDone> {
                   Color.fromARGB(255, 252, 219, 205),
                   Color.fromARGB(255, 232, 203, 249)
                 ],
-                widget: Text(taskNotDoneList[index].date ?? ''),
+                widget: Text(taskNotDoneList[index].date ?? '',style: GoogleFonts.irishGrover(),),
                 startTime: taskNotDoneList[index].startTime ?? '',
                 endTime: taskNotDoneList[index].endTime ?? '',
               );
