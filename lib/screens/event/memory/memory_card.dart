@@ -20,7 +20,8 @@ class MemoryCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Card(
-      margin: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      color: Colors.yellow.shade100,
+      margin:const EdgeInsets.symmetric(horizontal: 2, vertical: 8),
       child: Padding(
         padding: EdgeInsets.all(16),
         child: Column(

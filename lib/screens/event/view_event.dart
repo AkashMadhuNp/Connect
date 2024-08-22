@@ -136,7 +136,7 @@ class _ViewEventState extends State<ViewEvent> {
 
                       if (memories.isEmpty)
               Padding(
-                padding: const EdgeInsets.all(16.0),
+                padding: const EdgeInsets.all(1.0),
                 child: Text(
                   'No memories added yet!',
                   style: GoogleFonts.irishGrover(

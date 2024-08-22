@@ -2,7 +2,6 @@
 import 'package:first_project_app/db_Functions/db_functions.dart';
 import 'package:first_project_app/model/usermodel.dart';
 import 'package:first_project_app/screens/home/home_nav.dart';
-import 'package:first_project_app/screens/home/home_page.dart';
 import 'package:first_project_app/screens/homescreen.dart';
 import 'package:flutter/material.dart';
 import 'package:lottie/lottie.dart';
@@ -23,7 +22,7 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
   void initState() {
     super.initState();
     controller = AnimationController(vsync:this,
-    duration: Duration(milliseconds: 750),
+    duration:const Duration(milliseconds: 750),
     );
     initialCurrentUser();
 

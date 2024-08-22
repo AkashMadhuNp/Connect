@@ -7,7 +7,7 @@ import 'package:image_picker/image_picker.dart';
 
 class AddMemoryPage extends StatefulWidget {
   final String eventId;
-  AddMemoryPage({Key? key, required this.eventId}) : super(key: key);
+  const AddMemoryPage({Key? key, required this.eventId}) : super(key: key);
 
   @override
   State<AddMemoryPage> createState() => _AddMemoryPageState();
@@ -24,9 +24,12 @@ class _AddMemoryPageState extends State<AddMemoryPage> {
       backgroundColor: Colors.orange,
       appBar: AppBar(
         centerTitle: true,
-        leading: IconButton(onPressed: () {
-          Navigator.of(context).pop();
-        }, icon: Icon(Icons.arrow_back_ios,color: Colors.white,)),
+        leading: IconButton(
+          onPressed: () {
+            Navigator.of(context).pop();
+          },
+          icon: Icon(Icons.arrow_back_ios, color: Colors.white),
+        ),
         toolbarHeight: 100,
         backgroundColor: Colors.orange,
         title: Text(
@@ -50,7 +53,7 @@ class _AddMemoryPageState extends State<AddMemoryPage> {
           padding: const EdgeInsets.all(20.0),
           child: Column(
             children: [
-              SizedBox(height: 30,),
+              SizedBox(height: 30),
               TextField(
                 maxLines: 3,
                 controller: _textController,
@@ -70,21 +73,18 @@ class _AddMemoryPageState extends State<AddMemoryPage> {
                   focusedBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(30)
                   )
-
                 ),
-
               ),
               SizedBox(height: 16),
               ElevatedButton.icon(
-                onPressed: _pickImage,
+                onPressed: _openImagePicker,
                 icon: Icon(Icons.photo_library),
-                label: Text("Add Photo", style: GoogleFonts.irishGrover(
+                label: Text("Add Photos", style: GoogleFonts.irishGrover(
                   fontSize: 18
                 )),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.orange,
                   foregroundColor: Colors.white
-                 
                 ),
               ),
               SizedBox(height: 16),
@@ -92,12 +92,34 @@ class _AddMemoryPageState extends State<AddMemoryPage> {
                 child: Container(
                   color: Colors.yellow.shade200,
                   child: GridView.builder(
-                    
                     itemCount: _photoUrls.length,
                     itemBuilder: (context, index) {
-                      return Image.file(File(_photoUrls[index]), fit: BoxFit.cover);
+                      return Stack(
+                        fit: StackFit.expand,
+                        children: [
+                          Image.file(File(_photoUrls[index]), fit: BoxFit.cover),
+                          Positioned(
+                            top: 5,
+                            right: 5,
+                            child: GestureDetector(
+                              onTap: () {
+                                setState(() {
+                                  _photoUrls.removeAt(index);
+                                });
+                              },
+                              child: Container(
+                                decoration: BoxDecoration(
+                                  color: Colors.black.withOpacity(0.5),
+                                  shape: BoxShape.circle,
+                                ),
+                                child: Icon(Icons.close, color: Colors.white, size: 20),
+                              ),
+                            ),
+                          ),
+                        ],
+                      );
                     },
-                    gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(crossAxisCount: 3, crossAxisSpacing: 4, mainAxisSpacing: 4,),
+                    gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(crossAxisCount: 3, crossAxisSpacing: 4, mainAxisSpacing: 4),
                   ),
                 ),
               ),
@@ -111,9 +133,7 @@ class _AddMemoryPageState extends State<AddMemoryPage> {
                       )),
                       style: ElevatedButton.styleFrom(
                         backgroundColor: Colors.orange,
-                  foregroundColor: Colors.white,
-
-                        
+                        foregroundColor: Colors.white,
                       ),
                     )
             ],
@@ -138,7 +158,6 @@ class _AddMemoryPageState extends State<AddMemoryPage> {
     try {
       final memoryFunction = MemoryFunction();
       
-      // Create a MemoryModel object
       MemoryModel memory = MemoryModel(
         id: DateTime.now().millisecondsSinceEpoch.toString(), 
         eventId: widget.eventId,
@@ -147,7 +166,6 @@ class _AddMemoryPageState extends State<AddMemoryPage> {
         createdAt: DateTime.now(),
       );
 
-      // Call addMemory with the MemoryModel object
       await memoryFunction.addMemory(memory);
 
       Navigator.of(context).pop();
@@ -162,12 +180,109 @@ class _AddMemoryPageState extends State<AddMemoryPage> {
     }
   }
 
+  Future<void> _openImagePicker() async {
+    await Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (context) => MultiImagePickerPage(
+          onImagesSelected: (List<String> selectedImages) {
+            setState(() {
+              _photoUrls.addAll(selectedImages);
+            });
+          },
+        ),
+      ),
+    );
+  }
+}
 
-   Future<void> _pickImage() async {
-    final pickedFile = await ImagePicker().pickImage(source: ImageSource.gallery);
-    if (pickedFile != null) {
+class MultiImagePickerPage extends StatefulWidget {
+  final Function(List<String>) onImagesSelected;
+
+  MultiImagePickerPage({required this.onImagesSelected});
+
+  @override
+  _MultiImagePickerPageState createState() => _MultiImagePickerPageState();
+}
+
+class _MultiImagePickerPageState extends State<MultiImagePickerPage> {
+  final ImagePicker _picker = ImagePicker();
+  List<XFile> _selectedImages = [];
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        backgroundColor: Colors.orange,
+        leading: IconButton(onPressed: () {
+          Navigator.of(context).pop();
+        }, icon: Icon(Icons.arrow_back_ios,color: Colors.white,)),
+        centerTitle: true,
+        title: Text('Select Images',style: GoogleFonts.irishGrover(color: Colors.white),),
+        actions: [
+          IconButton(
+            icon: Icon(Icons.check),
+            onPressed: () {
+              widget.onImagesSelected(_selectedImages.map((image) => image.path).toList());
+              Navigator.of(context).pop();
+            },
+          ),
+        ],
+      ),
+      body: GridView.builder(
+        itemCount: _selectedImages.length + 1,
+        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+          crossAxisCount: 3,
+          mainAxisSpacing: 4.0,
+          crossAxisSpacing: 4.0,
+        ),
+        itemBuilder: (context, index) {
+          if (index == 0) {
+            return GestureDetector(
+              onTap: _pickImage,
+              child: Container(
+                color: Colors.grey[300],
+                child: Icon(Icons.add_a_photo, size: 50),
+              ),
+            );
+          } else {
+            return Stack(
+              fit: StackFit.expand,
+              children: [
+                Image.file(
+                  File(_selectedImages[index - 1].path),
+                  fit: BoxFit.cover,
+                ),
+                Positioned(
+                  top: 5,
+                  right: 5,
+                  child: GestureDetector(
+                    onTap: () {
+                      setState(() {
+                        _selectedImages.removeAt(index - 1);
+                      });
+                    },
+                    child: Container(
+                      decoration: BoxDecoration(
+                        color: Colors.black.withOpacity(0.5),
+                        shape: BoxShape.circle,
+                      ),
+                      child: Icon(Icons.close, color: Colors.white, size: 20),
+                    ),
+                  ),
+                ),
+              ],
+            );
+          }
+        },
+      ),
+    );
+  }
+
+  Future<void> _pickImage() async {
+    final XFile? image = await _picker.pickImage(source: ImageSource.gallery);
+    if (image != null) {
       setState(() {
-        _photoUrls.add(pickedFile.path);
+        _selectedImages.add(image);
       });
     }
   }

@@ -20,10 +20,13 @@ class Usercontainer extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final height = MediaQuery.of(context).size.height;
+
+    final Width = MediaQuery.of(context).size.width;
     return Container(
       padding:const EdgeInsets.all(8),  // Added padding
       height: 250,
-      width: double.infinity,
+      width: Width,
       decoration: BoxDecoration(
         boxShadow: [
           BoxShadow(
