@@ -1,6 +1,8 @@
 import 'dart:io';
+import 'dart:typed_data';
 import 'package:first_project_app/class/menu_items.dart';
 import 'package:first_project_app/customWidgets/custompopupbtn.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
@@ -11,26 +13,24 @@ class Usercontainer extends StatelessWidget {
   final Color color;
 
   const Usercontainer({
-    super.key, 
+    Key? key, 
     required this.text, 
     required this.img, 
     required this.color, 
     required this.items
-    });
+  }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    final height = MediaQuery.of(context).size.height;
-
-    final Width = MediaQuery.of(context).size.width;
+    final width = MediaQuery.of(context).size.width;
     return Container(
-      padding:const EdgeInsets.all(8),  // Added padding
+      padding: const EdgeInsets.all(8),
       height: 250,
-      width: Width,
+      width: width,
       decoration: BoxDecoration(
         boxShadow: [
           BoxShadow(
-            color:const Color.fromARGB(255, 110, 100, 117).withOpacity(0.5),
+            color: const Color.fromARGB(255, 110, 100, 117).withOpacity(0.5),
             blurRadius: 7,
             spreadRadius: 1,
             offset: const Offset(0, 3),
@@ -39,25 +39,20 @@ class Usercontainer extends StatelessWidget {
         gradient: LinearGradient(
           colors: [
             Colors.orange.shade300,
-           const Color.fromARGB(255, 237, 217, 37),
+            const Color.fromARGB(255, 237, 217, 37),
             Colors.orange.shade400
           ],
-          // begin: Alignment.topLeft,
-          // end: Alignment.bottomRight,
         ),
         borderRadius: BorderRadius.circular(20),
       ),
       child: Center(
         child: Column(
-          
           mainAxisSize: MainAxisSize.min,
           children: [
-            
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                SizedBox(width: 150,),
-                
+                SizedBox(width: 150),
                 CustomPopUpButton(items: items, color: Colors.black)
               ],
             ),
@@ -71,13 +66,7 @@ class Usercontainer extends StatelessWidget {
                   width: 1,
                 ),
               ),
-              child: img == ''
-                  ? const CircleAvatar(
-                      backgroundImage: AssetImage("assets/profile_icon.jpg"),
-                    )
-                  : CircleAvatar(
-                      backgroundImage: FileImage(File(img)),
-                    ),
+              child: _buildProfileImage(),
             ),
             const SizedBox(height: 10),
             SizedBox(
@@ -97,4 +86,34 @@ class Usercontainer extends StatelessWidget {
       ),
     );
   }
+
+  Widget _buildProfileImage() {
+    if (img.isEmpty) {
+      return const CircleAvatar(
+        backgroundImage: AssetImage("assets/profile_icon.jpg"),
+      );
+    }
+
+    if (kIsWeb) {
+      final Uint8List? imageData = webImageStore[img];
+      if (imageData != null) {
+        return CircleAvatar(
+          backgroundImage: MemoryImage(imageData),
+        );
+      } else {
+      
+        return const CircleAvatar(
+          backgroundImage: AssetImage("assets/profile_icon.jpg"),
+        );
+      }
+    } else {
+      
+      return CircleAvatar(
+        backgroundImage: FileImage(File(img)),
+      );
+    }
+  }
 }
+
+
+Map<String, Uint8List> webImageStore = {};

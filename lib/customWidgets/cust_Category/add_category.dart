@@ -21,7 +21,7 @@ class AddCategory extends StatelessWidget {
           child: Container(
             //color: Colors.orange,
             height: isWeb ? 40 : 100,
-            width: isWeb ? double.infinity : double.infinity,
+            width: isWeb ? 40 : double.infinity,
             child: Center(
               child: Text(
                 "+ Add Category",

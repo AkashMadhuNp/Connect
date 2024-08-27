@@ -8,6 +8,7 @@ import 'package:first_project_app/model/taskmodel.dart';
 import 'package:first_project_app/model/usermodel.dart';
 import 'package:first_project_app/screens/home/home_nav.dart';
 import 'package:first_project_app/services/notification_services.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
@@ -52,6 +53,13 @@ class _AddTaskPageState extends State<AddTaskPage> {
   final taskNoteController = TextEditingController();
 
   bool? reminderOn = false;
+
+  bool isLargeScreen(BuildContext context) {
+  return MediaQuery.of(context).size.width > 600; // Adjust
+}
+
+
+  
 
   
 
@@ -104,6 +112,7 @@ class _AddTaskPageState extends State<AddTaskPage> {
                         left: 30,right: 30
                       ),
                       child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           const SizedBox(height: 10,),
@@ -149,9 +158,12 @@ class _AddTaskPageState extends State<AddTaskPage> {
                             valueListenable: currentUserCategoryNotifier, 
                             builder: (context, value, child) {
                               if(value.isEmpty){
-                                return CustomDropDownButton(
-                                  onChanged: (value){}, 
-                                  items: emptyList);
+                                return SizedBox(
+                                 // width: 350,
+                                  child: CustomDropDownButton(
+                                    onChanged: (value){}, 
+                                    items: emptyList),
+                                );
                               }else{
                                 listcategory.clear();
                                 for(var element in value){
@@ -218,6 +230,8 @@ class _AddTaskPageState extends State<AddTaskPage> {
                             size: 18,
                             )),
                             ),
+
+                            
 
 
                             Row(
@@ -413,63 +427,66 @@ class _AddTaskPageState extends State<AddTaskPage> {
                                 top: 30,
                                 bottom: 10
                               ),
-                              child: ElevatedButton(
-                                onPressed: () async {
-                                  reminderNotifier.value = !reminderNotifier.value;
-                                  reminderOn = !reminderOn!;
-                                  
-                                },
-                                style: ButtonStyle(
-                                  shape: MaterialStatePropertyAll(
-                                    RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(30),
-                                      side: BorderSide(
-                                        color: reminderOn == true
-                                        ? Colors.orange
-                                        : Colors.black,
-                                        width: 1
+                              child: SizedBox(
+                                
+                                child: ElevatedButton(
+                                  onPressed: () async {
+                                    reminderNotifier.value = !reminderNotifier.value;
+                                    reminderOn = !reminderOn!;
+                                    
+                                  },
+                                  style: ButtonStyle(
+                                    shape: MaterialStatePropertyAll(
+                                      RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.circular(30),
+                                        side: BorderSide(
+                                          color: reminderOn == true
+                                          ? Colors.orange
+                                          : Colors.black,
+                                          width: 1
+                                        )
                                       )
-                                    )
-                                  ),
-
-
-                                  backgroundColor: MaterialStatePropertyAll(
-                                    reminderOn == true
-                                    ? Colors.orange
-                                    :Colors.white
-                                    )
-                                ),
-
-                                child: Padding(
-                                  padding: EdgeInsets.all(15),
-                                  child: Row(
-                                    mainAxisAlignment: MainAxisAlignment.center,
-                                    children: [
-                                      Text(reminderOn == true
-                                      ? "Reminder is On"
-                                      : "Set Reminder",
-                                      style: GoogleFonts.irishGrover(
-                                        color: reminderOn == true
-                                          ? Colors.white
-                                      : Colors.black,
-                                      fontWeight: FontWeight.bold
-                                      ),
-                                      ),
-
-                                      SizedBox(width: 20,),
-
-
-                                      Icon(
-                                        reminderOn == true
-                                        ? Icons.notifications_active
-                                        : Icons.notifications_none,
-                                        color: reminderOn == true
-                                        ? Colors.white
-                                        : Colors.black
+                                    ),
+                                
+                                
+                                    backgroundColor: MaterialStatePropertyAll(
+                                      reminderOn == true
+                                      ? Colors.orange
+                                      :Colors.white
                                       )
-                                    ],
                                   ),
                                 
+                                  child: Padding(
+                                    padding: EdgeInsets.all(15),
+                                    child: Row(
+                                      mainAxisAlignment: MainAxisAlignment.center,
+                                      children: [
+                                        Text(reminderOn == true
+                                        ? "Reminder is On"
+                                        : "Set Reminder",
+                                        style: GoogleFonts.irishGrover(
+                                          color: reminderOn == true
+                                            ? Colors.white
+                                        : Colors.black,
+                                        fontWeight: FontWeight.bold
+                                        ),
+                                        ),
+                                
+                                        SizedBox(width: 20,),
+                                
+                                
+                                        Icon(
+                                          reminderOn == true
+                                          ? Icons.notifications_active
+                                          : Icons.notifications_none,
+                                          color: reminderOn == true
+                                          ? Colors.white
+                                          : Colors.black
+                                        )
+                                      ],
+                                    ),
+                                  
+                                  ),
                                 ),
                               ),
                               );
@@ -479,7 +496,7 @@ class _AddTaskPageState extends State<AddTaskPage> {
 
                           Padding(padding: EdgeInsets.only(top: 20,bottom: 20),
                           child: SizedBox(
-                            width: 350,
+                            width: double.infinity,
                             child: ElevatedButton(
                               
                               style: ButtonStyle(

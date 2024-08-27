@@ -58,7 +58,7 @@ class _CustomDialogBoxState extends State<CustomDialogBox> {
                   validator: (value) {
                     final trimmedValue = value?.trim();
                     if (trimmedValue == null || trimmedValue.isEmpty) {
-                      return 'location can\'t be empty';
+                      return 'Title can\'t be empty';
                     } else {
                       return null;
                     }

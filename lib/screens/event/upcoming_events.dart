@@ -73,7 +73,7 @@ class _MyWidgetState extends State<UpcomingEvents> {
                 return Column(
                   children: [
                     Padding(
-                      padding: const EdgeInsets.only(top: 100, bottom: 20),
+                      padding: const EdgeInsets.only(top: 10, bottom: 20),
                       child: SvgPicture.asset(
                         'assets/donetask.svg',
                         height: 100,

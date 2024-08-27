@@ -13,6 +13,7 @@ import 'package:first_project_app/model/taskmodel.dart';
 import 'package:first_project_app/model/usermodel.dart';
 import 'package:first_project_app/screens/calenderScreen/calender_screen.dart';
 import 'package:first_project_app/screens/home/view_category.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
   import 'package:google_fonts/google_fonts.dart';
 
@@ -503,7 +504,7 @@ void onOptionSelected(List<CategoryModel> list) {
           },
           category: element.categoryTitle,
           text: SizedBox(
-            width: 100,
+            width: kIsWeb ? 200 : 100,
             child: Text(
               element.categoryTitle,
               style: GoogleFonts.irishGrover(

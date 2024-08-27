@@ -1,7 +1,7 @@
 import 'package:first_project_app/model/usermodel.dart';
 import 'package:flutter/material.dart';
 import 'package:hive/hive.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+ import 'package:shared_preferences/shared_preferences.dart';
 
 ValueNotifier<List<UserModel>> userListNotifier = ValueNotifier([]);
 ValueNotifier<String?> currentNotifier = ValueNotifier('');
@@ -121,10 +121,9 @@ Future<String?> validateUserLogin(String userName, String Password) async {
     }
   }
 
-  Future<bool> checkUserLoggedIn(bool isLoggedIn, String key)async{
+  Future<bool> checkUserLoggedIn(bool isLoggedIn, String key) async {
     SharedPreferences pref = await SharedPreferences.getInstance();
-    bool? isLoggedIn = pref.getBool('isLoggedIn');
-    return isLoggedIn ?? false;
+    return pref.setBool('isLoggedIn', isLoggedIn);
   }
 
 

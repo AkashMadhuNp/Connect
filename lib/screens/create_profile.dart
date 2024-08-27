@@ -1,7 +1,9 @@
 import 'dart:io';
+import 'package:file_picker/file_picker.dart';
 import 'package:first_project_app/db_Functions/db_functions.dart';
 import 'package:first_project_app/model/usermodel.dart';
 import 'package:first_project_app/screens/home/home_nav.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:image_picker/image_picker.dart';
@@ -21,6 +23,7 @@ class _CreateProfileState extends State<CreateProfile> {
   final formkey = GlobalKey<FormState>();
 
   File? imagepath;
+  Uint8List? webImage;
   String? image;
 
   @override
@@ -49,10 +52,7 @@ class _CreateProfileState extends State<CreateProfile> {
                       border: Border.all(color:  Color.fromARGB(255, 71, 50, 77), width: 3.0),
                     ),
                     child: CircleAvatar(
-                      backgroundImage: imagepath != null
-                          ?FileImage(imagepath!)
-                          :const AssetImage("assets/profile_icon.jpg")
-                          as ImageProvider
+                      backgroundImage: _getImageProvider()
                     ),
 
 
@@ -77,29 +77,33 @@ class _CreateProfileState extends State<CreateProfile> {
                Form(
                  key: formkey,
                  child: Padding(
-                   padding: const EdgeInsets.all(30.0),
-                   child: TextFormField(
-                     autovalidateMode: AutovalidateMode.onUserInteraction,
-                     controller:nameController,
-                     decoration: InputDecoration(
-                      contentPadding: EdgeInsets.symmetric(vertical: 20,horizontal: 20),
-                       hintText: "Enter your Name",
-                       hintStyle: GoogleFonts.irishGrover(),
-                       fillColor: Colors.white,
-                       filled: true,
-                       border: OutlineInputBorder(
-                         borderSide: BorderSide.none,
-                         borderRadius: BorderRadius.circular(30),
-                       )
+                   padding: const EdgeInsets.all(8.0),
+                   child: SizedBox(
+                    width: 350,
+                     child: TextFormField(
+                      
+                       autovalidateMode: AutovalidateMode.onUserInteraction,
+                       controller:nameController,
+                       decoration: InputDecoration(
+                        contentPadding: EdgeInsets.symmetric(vertical: 20,horizontal: 20),
+                         hintText: "Enter your Name",
+                         hintStyle: GoogleFonts.irishGrover(),
+                         fillColor: Colors.white,
+                         filled: true,
+                         border: OutlineInputBorder(
+                           borderSide: BorderSide.none,
+                           borderRadius: BorderRadius.circular(30),
+                         )
+                       ),
+                       validator: (value){
+                         final trimmedValue = value?.trim();
+                         if(trimmedValue == null || trimmedValue.isEmpty){
+                           return "Name can't be empty";
+                         }else{
+                           return null;
+                         }
+                       },
                      ),
-                     validator: (value){
-                       final trimmedValue = value?.trim();
-                       if(trimmedValue == null || trimmedValue.isEmpty){
-                         return "Name can't be empty";
-                       }else{
-                         return null;
-                       }
-                     },
                    )
                  ),
                ),
@@ -108,7 +112,9 @@ class _CreateProfileState extends State<CreateProfile> {
 
                Padding(
                           padding: const EdgeInsets.only(right: 30.0,left: 30,top: 15),
-                          child: SizedBox(height: 60,width: double.infinity,
+                          child: SizedBox(
+                            height: 60,
+                            width: 350,
                           child: ElevatedButton(
 
                             style:const ButtonStyle(
@@ -134,7 +140,9 @@ class _CreateProfileState extends State<CreateProfile> {
 
                         Padding(
                           padding: const EdgeInsets.only(right: 30.0,left: 30,top: 15),
-                          child: SizedBox(height: 60,width: double.infinity,
+                          child: SizedBox(
+                            height: 60,
+                            width: 350,
                           child: ElevatedButton(
 
                             style:const ButtonStyle(
@@ -159,15 +167,43 @@ class _CreateProfileState extends State<CreateProfile> {
   }
 
 
+  ImageProvider _getImageProvider(){
+    if(kIsWeb){
+      return webImage != null
+      ? MemoryImage(webImage!)
+      : const AssetImage("assets/profile_icon.jpg") as ImageProvider;
+    }else{
+      return imagepath != null
+      ? FileImage(imagepath!)
+      : const AssetImage("assets/profile_icon.jpg") as ImageProvider;
+    }
+  }
+
+
 
 
 Future pickImageFromGallery()async{
+if(kIsWeb){
+  FilePickerResult? result = await FilePicker.platform.pickFiles(
+    type: FileType.image
+  );
+  if(result!=null){
+    setState(() {
+      webImage = result.files.single.bytes;
+      image = result.files.single.name;
+    });
+  }
+
+}else{
+
+
 final returnedImage = await ImagePicker().pickImage(source: ImageSource.gallery);
 if(returnedImage == null) return;
 setState(() {
   imagepath = File(returnedImage.path);
   image = returnedImage.path;
 });
+}
 }
 
 

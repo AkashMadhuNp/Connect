@@ -279,11 +279,12 @@ class _MultiImagePickerPageState extends State<MultiImagePickerPage> {
   }
 
   Future<void> _pickImage() async {
-    final XFile? image = await _picker.pickImage(source: ImageSource.gallery);
-    if (image != null) {
+    final List<XFile>? images = await _picker.pickMultiImage();
+    if (images != null && images.isNotEmpty) {
       setState(() {
-        _selectedImages.add(image);
+        _selectedImages.addAll(images);
       });
     }
   }
+
 }
